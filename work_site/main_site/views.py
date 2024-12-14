@@ -7,3 +7,6 @@ def index(request):
 
 def showcase(request):
     return render(request,'showcase_your_work.html')
+
+def browse_workers(request):
+    return render(request,'browse_workers.html')
