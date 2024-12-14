@@ -4,3 +4,6 @@ from django.shortcuts import render
 
 def index(request):
     return render(request,'index.html')
+
+def showcase(request):
+    return render(request,'showcase_your_work.html')
