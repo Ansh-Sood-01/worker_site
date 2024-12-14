@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Upload Showcase with Categories</title>
+    <title>Image Showcase</title>
     <style>
         * {
             margin: 0;
@@ -24,7 +24,6 @@
             display: flex;
             max-width: 1200px;
             margin: 0 auto;
-            justify-content: space-between;
             gap: 2rem;
         }
 
@@ -67,25 +66,12 @@
             color: white;
         }
 
-        /* Image Upload Section */
-        .upload-section {
-            margin-bottom: 2rem;
-            text-align: center;
-        }
-
-        .upload-section input[type="file"] {
-            display: inline-block;
-            padding: 0.5rem;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-
         /* Image Display Section */
         .image-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
-            margin-top: 2rem;
+            width: 80%;
         }
 
         .image-card {
@@ -94,6 +80,7 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
         }
 
         .image-card:hover {
@@ -107,6 +94,78 @@
             object-fit: cover;
         }
 
+        .image-card .description {
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .image-card .description h3 {
+            font-size: 1.2rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+
+        .image-card .description p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Modal Section */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            max-width: 600px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+
+        .modal-content h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin: 1rem 0 0.5rem;
+        }
+
+        .modal-content p {
+            font-size: 1rem;
+            color: #555;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .close-btn:hover {
+            color: #007bff;
+        }
+
         /* Responsive Adjustments */
         @media (max-width: 768px) {
             .container {
@@ -118,6 +177,10 @@
                 width: 100%;
                 margin-bottom: 2rem;
             }
+
+            .image-grid {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -127,85 +190,82 @@
         <div class="category-section">
             <h2>Categories</h2>
             <ul id="categoryList">
-                <li class="category-item" onclick="filterCategory('All')">All</li>
-                <li class="category-item" onclick="filterCategory('Carpentry')">Carpentry</li>
-                <li class="category-item" onclick="filterCategory('Plumbing')">Plumbing</li>
-                <li class="category-item" onclick="filterCategory('Electrician')">Electrician</li>
-                <li class="category-item" onclick="filterCategory('Painting')">Painting</li>
+                <li class="category-item active" onclick="filterCategory('All')">All</li>
+                {% for category in categories %}
+                <li class="category-item" onclick="filterCategory('{{ category.name }}')">
+                    {{ category.name }}
+                </li>
+                {% endfor %}
             </ul>
         </div>
 
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Image Upload Section -->
-            <div class="upload-section">
-                <input type="file" id="imageUpload" accept="image/*" multiple onchange="previewImages()">
+        <!-- Image Grid -->
+        <div class="image-grid" id="imageGrid">
+            {% for image in images %}
+            <div class="image-card" data-category="{{ image.category.name }}" onclick="openModal(this)">
+                <img src="{{ image.image_file.url }}" alt="{{ image.title }}">
+                <div class="description">
+                    <h3>{{ image.title }}</h3>
+                    <p>{{ image.description }}</p>
+                </div>
             </div>
+            {% endfor %}
+        </div>
+    </div>
 
-            <!-- Image Grid -->
-            <div class="image-grid" id="imageGrid">
-                <!-- Uploaded Images will be displayed here -->
-            </div>
+    <!-- Modal -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <img id="modalImage" src="" alt="Modal Image">
+            <h3 id="modalTitle"></h3>
+            <p id="modalDescription"></p>
         </div>
     </div>
 
     <script>
-        let selectedCategory = 'All';
-        const imageData = [];
-
-        // Function to filter and display images based on the selected category
         function filterCategory(category) {
-            selectedCategory = category;
-
-            // Highlight the selected category
             const categoryItems = document.querySelectorAll('.category-item');
+            categoryItems.forEach(item => item.classList.remove('active'));
             categoryItems.forEach(item => {
-                item.classList.remove('active');
+                if (item.textContent === category) {
+                    item.classList.add('active');
+                }
             });
-            document.querySelector(`.category-item:contains(${category})`).classList.add('active');
 
-            displayImages();
+            const cards = document.querySelectorAll('.image-card');
+            cards.forEach(card => {
+                const cardCategory = card.getAttribute('data-category');
+                if (category === 'All' || cardCategory === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
         }
 
-        // Function to preview uploaded images
-        function previewImages() {
-            const files = document.getElementById('imageUpload').files;
+        function openModal(card) {
+            const modal = document.getElementById('modal');
+            const modalImage = document.getElementById('modalImage');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalDescription = document.getElementById('modalDescription');
 
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const reader = new FileReader();
+            const imgSrc = card.querySelector('img').src;
+            const title = card.querySelector('h3').textContent;
+            const description = card.querySelector('p').textContent;
 
-                reader.onload = function(e) {
-                    imageData.push({
-                        src: e.target.result,
-                        category: selectedCategory,
-                    });
+            modalImage.src = imgSrc;
+            modalTitle.textContent = title;
+            modalDescription.textContent = description;
 
-                    displayImages();
-                };
-
-                reader.readAsDataURL(file);
-            }
+            modal.style.display = 'flex';
         }
 
-        // Function to display images
-        function displayImages() {
-            const imageGrid = document.getElementById('imageGrid');
-            imageGrid.innerHTML = ''; // Clear existing images
-
-            imageData
-                .filter(image => selectedCategory === 'All' || image.category === selectedCategory)
-                .forEach(image => {
-                    const card = document.createElement('div');
-                    card.classList.add('image-card');
-
-                    const img = document.createElement('img');
-                    img.src = image.src;
-
-                    card.appendChild(img);
-                    imageGrid.appendChild(card);
-                });
+        function closeModal() {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'none';
         }
     </script>
 </body>
 </html>
+
