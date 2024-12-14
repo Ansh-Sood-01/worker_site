@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Workers Showcase</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Page Title */
+        .page-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title h1 {
+            font-size: 2.5rem;
+            color: #007bff;
+        }
+
+        .page-title p {
+            color: #555;
+            margin-top: 0.5rem;
+        }
+
+        /* Filter Section */
+        .filter-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .filter-section input, .filter-section select {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            width: 250px;
+        }
+
+        /* Card Grid */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .worker-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .worker-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .worker-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .worker-card .card-content {
+            padding: 1rem;
+        }
+
+        .worker-card h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #007bff;
+        }
+
+        .worker-card p {
+            margin-bottom: 1rem;
+            color: #666;
+        }
+
+        .worker-card a {
+            text-decoration: none;
+            color: white;
+            background-color: #007bff;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .worker-card a:hover {
+            background-color: #0056b3;
+        }
+
+        /* Responsive Filters */
+        @media (max-width: 768px) {
+            .filter-section {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .filter-section input, .filter-section select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Page Title -->
+        <div class="page-title">
+            <h1>Hand Workers Showcase</h1>
+            <p>Find skilled hand workers for your projects.</p>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <input type="text" placeholder="Search workers..." id="searchBar" onkeyup="filterWorkers()">
+            <select id="jobFilter" onchange="filterWorkers()">
+                <option value="">All Skills</option>
+                <option value="Carpenter">Carpenter</option>
+                <option value="Plumber">Plumber</option>
+                <option value="Electrician">Electrician</option>
+                <option value="Painter">Painter</option>
+            </select>
+        </div>
+
+        <!-- Worker Cards -->
+        <div class="card-grid" id="workerGrid">
+            <!-- Worker 1 -->
+            <div class="worker-card" data-job="Carpenter">
+                <img src="https://via.placeholder.com/300x200" alt="Carpenter">
+                <div class="card-content">
+                    <h2>Jane Doe</h2>
+                    <p>Expert carpenter with 10+ years of experience in furniture making.</p>
+                    <a href="#">View Profile</a>
+                </div>
+            </div>
+
+            <!-- Worker 2 -->
+            <div class="worker-card" data-job="Plumber">
+                <img src="https://via.placeholder.com/300x200" alt="Plumber">
+                <div class="card-content">
+                    <h2>John Smith</h2>
+                    <p>Certified plumber specializing in residential and commercial repairs.</p>
+                    <a href="#">View Profile</a>
+                </div>
+            </div>
+
+            <!-- Worker 3 -->
+            <div class="worker-card" data-job="Electrician">
+                <img src="https://via.placeholder.com/300x200" alt="Electrician">
+                <div class="card-content">
+                    <h2>Emily Brown</h2>
+                    <p>Licensed electrician with expertise in wiring and electrical safety.</p>
+                    <a href="#">View Profile</a>
+                </div>
+            </div>
+
+            <!-- Worker 4 -->
+            <div class="worker-card" data-job="Painter">
+                <img src="https://via.placeholder.com/300x200" alt="Painter">
+                <div class="card-content">
+                    <h2>Chris Johnson</h2>
+                    <p>Creative painter offering interior and exterior painting services.</p>
+                    <a href="#">View Profile</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Filter Workers by Search and Job Type
+        function filterWorkers() {
+            const searchInput = document.getElementById('searchBar').value.toLowerCase();
+            const jobFilter = document.getElementById('jobFilter').value;
+            const workers = document.querySelectorAll('.worker-card');
+
+            workers.forEach(worker => {
+                const name = worker.querySelector('h2').textContent.toLowerCase();
+                const job = worker.getAttribute('data-job');
+
+                if ((name.includes(searchInput) || searchInput === '') &&
+                    (job === jobFilter || jobFilter === '')) {
+                    worker.style.display = 'block';
+                } else {
+                    worker.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
