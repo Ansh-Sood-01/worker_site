@@ -1,5 +1,5 @@
-{%load static %}
-{%include 'header.html'%}
+{% load static %}
+{% include 'header.html' %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hand Workers Showcase</title>
     <style>
+        /* Your CSS styles remain unchanged */
         * {
             margin: 0;
             padding: 0;
@@ -40,6 +41,44 @@
         .page-title p {
             color: #555;
             margin-top: 0.5rem;
+        }
+
+        /* Category Section - Fixed to the top left */
+        .category-section {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+
+        .category-section h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #007bff;
+        }
+
+        .category-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .category-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .category-section ul li a {
+            text-decoration: none;
+            color: #333;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .category-section ul li a:hover {
+            color: #007bff;
         }
 
         /* Filter Section */
@@ -124,11 +163,31 @@
             .filter-section input, .filter-section select {
                 width: 100%;
             }
+
+            /* Make category section responsive */
+            .category-section {
+                position: static;
+                width: 100%;
+                top: 0;
+                left: 0;
+                margin-bottom: 1rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Category Section -->
+        <div class="category-section">
+            <h3>Categories</h3>
+            <ul>
+                <li><a onclick="filterByCategory('')">All</a></li>
+                {% for category in categories %}
+                    <li><a onclick="filterByCategory('{{ category.name }}')">{{ category.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+
         <!-- Page Title -->
         <div class="page-title">
             <h1>Hand Workers</h1>
@@ -140,59 +199,43 @@
             <input type="text" placeholder="Search workers..." id="searchBar" onkeyup="filterWorkers()">
             <select id="jobFilter" onchange="filterWorkers()">
                 <option value="">All Skills</option>
-                <option value="Carpenter">Carpenter</option>
-                <option value="Plumber">Plumber</option>
-                <option value="Electrician">Electrician</option>
-                <option value="Painter">Painter</option>
+                {% for category in categories %}
+                    <option value="{{ category.name }}">{{ category.name }}</option>
+                {% endfor %}
             </select>
         </div>
 
         <!-- Worker Cards -->
         <div class="card-grid" id="workerGrid">
-            <!-- Worker 1 -->
-            <div class="worker-card" data-job="Carpenter">
-                <img src="https://via.placeholder.com/300x200" alt="Carpenter">
+            {% for worker in workers %}
+            <div class="worker-card" data-job="{{ worker.category.name }}">
+                <img src="{{ worker.image.url }}" alt="{{ worker.category.name }}">
                 <div class="card-content">
-                    <h2>Jane Doe</h2>
-                    <p>Expert carpenter with 10+ years of experience in furniture making.</p>
-                    <a href="#">View Profile</a>
+                    <h2>{{ worker.name }}</h2>
+                    <p>{{ worker.description }}</p>
+                    <a href="{{ worker.profile_url }}">View Profile</a>
                 </div>
             </div>
-
-            <!-- Worker 2 -->
-            <div class="worker-card" data-job="Plumber">
-                <img src="https://via.placeholder.com/300x200" alt="Plumber">
-                <div class="card-content">
-                    <h2>John Smith</h2>
-                    <p>Certified plumber specializing in residential and commercial repairs.</p>
-                    <a href="#">View Profile</a>
-                </div>
-            </div>
-
-            <!-- Worker 3 -->
-            <div class="worker-card" data-job="Electrician">
-                <img src="https://via.placeholder.com/300x200" alt="Electrician">
-                <div class="card-content">
-                    <h2>Emily Brown</h2>
-                    <p>Licensed electrician with expertise in wiring and electrical safety.</p>
-                    <a href="#">View Profile</a>
-                </div>
-            </div>
-
-            <!-- Worker 4 -->
-            <div class="worker-card" data-job="Painter">
-                <img src="https://via.placeholder.com/300x200" alt="Painter">
-                <div class="card-content">
-                    <h2>Chris Johnson</h2>
-                    <p>Creative painter offering interior and exterior painting services.</p>
-                    <a href="#">View Profile</a>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 
     <script>
-        // Filter Workers by Search and Job Type
+        function filterByCategory(category) {
+            document.getElementById('searchBar').value = '';
+            document.getElementById('jobFilter').value = '';
+
+            const workers = document.querySelectorAll('.worker-card');
+            workers.forEach(worker => {
+                const job = worker.getAttribute('data-job');
+                if (category === '' || job === category) {
+                    worker.style.display = 'block';
+                } else {
+                    worker.style.display = 'none';
+                }
+            });
+        }
+
         function filterWorkers() {
             const searchInput = document.getElementById('searchBar').value.toLowerCase();
             const jobFilter = document.getElementById('jobFilter').value;
